@@ -1,59 +1,24 @@
 #!/usr/bin/env bash
-# a bash script that sets up your web servers for the deployment of web_static
-
-# checks if nginx is intalled
-if ! dpkg -l | grep -qi "nginx"; then
-	sudo apt-get -y update
-	sudo apt-get -y install nginx
-fi
-
-# creates the dir /data if it does not exist
-if [[ ! -d '/data' ]]; then
-	sudo mkdir '/data'
-fi
-
-# creates the dir /data/web-static if it does not exist
-if [[ ! -d '/data/web_static' ]]; then
-	sudo mkdir '/data/web_static'
-fi
-
-# creates dir /data/web-static/releases if it does not exist
-if [[ ! -d '/data/web_static/releases' ]]; then
-	sudo mkdir '/data/web_static/releases'
-fi
-
-# creates dir /data/web_static/shared if it does not exist
-if [[ ! -d '/data/web_static/shared' ]]; then
-	sudo mkdir '/data/web_static/shared'
-fi
-
-# creates dir /data/web-static/releases/test if it does not exist
-if [[ ! -d '/data/web_static/releases/test' ]]; then
-	sudo mkdir '/data/web_static/releases/test'
-fi
-
-# creates file /data/web-static/releases/test/index.html if it does not exist
-if [[ ! -f '/data/web_static/releases/test/index.html' ]]; then
-	body="<html>
+# script to configure in order to serve the static pages
+apt-get -y update
+apt-get -y install nginx
+ufw allow 'Nginx HTTP'
+# instructions
+mkdir -p /data/web_static/releases/test/
+mkdir -p /data/web_static/shared/
+echo "<html>
   <head>
   </head>
   <body>
-    Holberton School
+    Fake content
   </body>
-</html>"
-	echo "$body" | sudo tee '/data/web_static/releases/test/index.html' > /dev/null
-fi
-
-# this a symbolic link linked to the test folder
-sudo ln -sf '/data/web_static/releases/test/' '/data/web_static/current'
-
-
-# changing the dir ownership
-sudo chown -R ubuntu:ubuntu '/data'
-
-# Use sed to locate the 'server {' block and replace the 'location' block
-old="server_name _;"
-new="server_name _;\n\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}"
-sudo sed -i "s|$old|$new|" /etc/nginx/sites-enabled/default
-
-sudo service nginx restart
+</html>" > /data/web_static/releases/test/index.html
+# symbolic link to folder erase
+ln -sf /data/web_static/releases/test/ /data/web_static/current
+# change owner and group to ubuntu
+chown -R ubuntu:ubuntu /data/
+# change content of available-default
+sed -i '43i\\n\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t autoindex on;\n\t}\n' /etc/nginx/sites-available/default
+# getting changes
+service nginx restart
+exit 0
