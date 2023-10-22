@@ -1,4 +1,3 @@
-
 #!/usr/bin/python3
 """ create a web application that listen in port 5000
 """
@@ -142,8 +141,6 @@ def close(var=None):
     """ realizae this, when the process finishes
     """
     storage.close()
-
-
 if __name__ == "__main__":
     # config the run
     app.run(host='0.0.0.0', port=5000)
